@@ -411,6 +411,18 @@ impl super::TermWindow {
                         .window_state
                         .intersects(WindowState::MAXIMIZED | WindowState::FULL_SCREEN)
                     {
+                        if let Some(click) = self.last_mouse_click.as_ref() {
+                            if click.streak > 1 {
+                                if self
+                                    .window_state
+                                    .intersects(WindowState::MAXIMIZED) {
+                                    context.restore();
+                                } else {
+                                    context.maximize();
+                                }
+                            }
+                        }
+
                         self.window_drag_position.replace(event.clone());
                     }
                     context.request_drag_move();
