@@ -156,11 +156,27 @@ impl super::TermWindow {
             }
 
             WMEK::Move => {
-                if let Some(start) = self.window_drag_position.as_ref() {
+                if let Some(start) = self.window_drag_position.as_mut() {
                     // Dragging the window
+
+                    // If we restored the window last frame, we need to adjust for the new width
+                    if self.restored_in_drag == true {
+                        self.restored_in_drag = false;
+                        start.coords.x = (self.dimensions.pixel_width / 2) as isize;
+                    }
+
                     // Compute the distance since the initial event
                     let delta_x = start.screen_coords.x - event.screen_coords.x;
                     let delta_y = start.screen_coords.y - event.screen_coords.y;
+
+                    // Dragging while maximized restores the window.
+                    if self.window_state.intersects(WindowState::MAXIMIZED) && (delta_x != 0 || delta_y != 0) {
+                        context.restore();
+
+                        // We don't have access to the restored window dimensions yet
+                        self.restored_in_drag = true;
+                        return;
+                    }
 
                     // Now compute a new window position.
                     // We don't have a direct way to get the position,
@@ -409,7 +425,7 @@ impl super::TermWindow {
                     // Potentially starting a drag by the tab bar
                     if !self
                         .window_state
-                        .intersects(WindowState::MAXIMIZED | WindowState::FULL_SCREEN)
+                        .intersects(WindowState::FULL_SCREEN)
                     {
                         if let Some(click) = self.last_mouse_click.as_ref() {
                             if click.streak > 1 {

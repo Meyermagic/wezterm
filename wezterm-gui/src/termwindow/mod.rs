@@ -420,6 +420,7 @@ pub struct TermWindow {
 
     ui_items: Vec<UIItem>,
     dragging: Option<(UIItem, MouseEvent)>,
+    restored_in_drag: bool,
 
     modal: RefCell<Option<Rc<dyn Modal>>>,
 
@@ -758,6 +759,7 @@ impl TermWindow {
             semantic_zones: HashMap::new(),
             ui_items: vec![],
             dragging: None,
+            restored_in_drag: false,
             last_ui_item: None,
             is_click_to_focus_window: false,
             key_table_state: KeyTableState::default(),
